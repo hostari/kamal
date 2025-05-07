@@ -27,6 +27,7 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
         end
       end
     end
+    run_hook "post-deploy", secrets: true
   end
 
   desc "upload [NAME]", "Upload accessory files to host", hide: true
@@ -71,6 +72,7 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
         boot(name, prepare: false)
       end
     end
+    run_hook "post-deploy", secrets: true
   end
 
   desc "start [NAME]", "Start existing accessory container on host"
@@ -87,6 +89,7 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
         end
       end
     end
+    run_hook "post-deploy", secrets: true
   end
 
   desc "stop [NAME]", "Stop existing accessory container on host"
@@ -104,6 +107,7 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
         end
       end
     end
+    run_hook "post-deploy", secrets: true
   end
 
   desc "restart [NAME]", "Restart existing accessory container on host"
@@ -112,6 +116,7 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
       stop(name)
       start(name)
     end
+    run_hook "post-deploy", secrets: true
   end
 
   desc "details [NAME]", "Show details about accessory on host (use NAME=all to show all accessories)"
