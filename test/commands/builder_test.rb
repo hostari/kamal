@@ -211,6 +211,13 @@ class CommandsBuilderTest < ActiveSupport::TestCase
     assert_equal "docker info --format '{{index .RegistryConfig.Mirrors 0}}'", command.first_mirror.join(" ")
   end
 
+  test "push with no cache" do
+    builder = new_builder_command
+    assert_equal \
+      "docker buildx build --output=type=registry --platform linux/amd64 --builder kamal-local-docker-container -t dhh/app:123 -t dhh/app:latest --label service=\"app\" --file Dockerfile --no-cache . 2>&1",
+      builder.push("registry", no_cache: true).join(" ")
+  end
+
   test "clone path with spaces" do
     command = new_builder_command
     Kamal::Git.stubs(:root).returns("/absolute/path with spaces")
@@ -228,7 +235,11 @@ class CommandsBuilderTest < ActiveSupport::TestCase
 
   private
     def new_builder_command(additional_config = {})
-      Kamal::Commands::Builder.new(Kamal::Configuration.new(@config.deep_merge(additional_config), version: "123"))
+      Kamal::Configuration.new(@config.deep_merge(additional_config), version: "123").then do |config|
+        KAMAL.reset
+        KAMAL.stubs(:config).returns(config)
+        Kamal::Commands::Builder.new(config)
+      end
     end
 
     def local_arch
