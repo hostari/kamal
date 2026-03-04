@@ -196,6 +196,12 @@ module Kamal::Cli
         end
       end
 
+      def arguments
+        @kamal_arguments ||= begin
+          instance_variable_get("@_invocations").values.flatten.compact.join(",")
+        end
+      end
+
       def first_invocation
         instance_variable_get("@_invocations").first
       end
