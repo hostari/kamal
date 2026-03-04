@@ -3,7 +3,7 @@ require "concurrent/array"
 
 class Kamal::Cli::Accessory < Kamal::Cli::Base
   desc "boot [NAME]", "Boot new accessory service on host (use NAME=all to boot all accessories)"
-  def boot(name, prepare: true)
+  def boot(name, prepare: true, send_hook: true)
     with_lock do
       if name == "all"
         KAMAL.accessory_names.each { |accessory_name| boot(accessory_name) }
@@ -38,6 +38,7 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
         end
       end
     end
+    run_hook "post-deploy", secrets: true, accessory_name: name, arguments: arguments, subaction: "boot" if send_hook
   end
 
   desc "upload [NAME]", "Upload accessory files to host", hide: true
@@ -82,11 +83,12 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
       else
         prepare(name)
         pull_image(name)
-        stop(name)
+        stop(name, send_hook: false)
         remove_container(name)
-        boot(name, prepare: false)
+        boot(name, prepare: false, send_hook: false)
       end
     end
+    run_hook "post-deploy", secrets: true, accessory_name: name, arguments: arguments, subaction: "reboot"
   end
 
   desc "start [NAME]", "Start existing accessory container on host"
@@ -103,10 +105,11 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
         end
       end
     end
+    run_hook "post-deploy", secrets: true, accessory_name: name, arguments: arguments, subaction: "start"
   end
 
   desc "stop [NAME]", "Stop existing accessory container on host"
-  def stop(name)
+  def stop(name, send_hook: true)
     with_lock do
       with_accessory(name) do |accessory, hosts|
         on(hosts) do
@@ -120,12 +123,13 @@ class Kamal::Cli::Accessory < Kamal::Cli::Base
         end
       end
     end
+    run_hook "post-deploy", secrets: true, accessory_name: name, arguments: arguments, subaction: "stop" if send_hook
   end
 
   desc "restart [NAME]", "Restart existing accessory container on host"
   def restart(name)
     with_lock do
-      stop(name)
+      stop(name, send_hook: false)
       start(name)
     end
   end
