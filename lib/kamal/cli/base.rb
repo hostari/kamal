@@ -42,6 +42,12 @@ module Kamal::Cli
       end
 
       def initialize_commander
+        # Change to the directory where kamal was invoked (for Nix compatibility)
+        # This ensures git commands, file operations, and Dir.pwd all work correctly
+        # when kamal is packaged by Nix or other package managers that may change
+        # the working directory context.
+        Dir.chdir(ENV["KAMAL_CWD"]) if ENV["KAMAL_CWD"]
+
         KAMAL.tap do |commander|
           if options[:verbose]
             ENV["VERBOSE"] = "1" # For backtraces via cli/start
